@@ -1,0 +1,18 @@
+﻿{
+  "Source": "Styles",
+  "Target": "wwwroot/css",
+  "Arguments": "--style=compressed",
+  "GenerateScopedCss": true,
+  "ScopedCssFolders": ["Pages"],
+  "IncludePaths": [],
+
+  "Compilations": [
+    { "Source":  "wwwroot/scss/app.scss", "Target":  "wwwroot/css/app.min.css" }
+  ],
+  
+  "Configurations": {
+    "Debug": {
+      "Arguments": "--style=expanded"
+    }
+  }
+}
