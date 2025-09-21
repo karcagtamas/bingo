@@ -1,7 +1,7 @@
 ﻿@using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
 @inherits LayoutComponentBase
 
-<FluentDesignTheme StorageName="theme"></FluentDesignTheme>
+<FluentDesignTheme StorageName="theme" @bind-Mode="Mode" @bind-CustomColor="Color"></FluentDesignTheme>
 <FluentToastProvider/>
 <FluentDialogProvider/>
 <FluentTooltipProvider/>
@@ -11,13 +11,17 @@
 <FluentLayout>
     <FluentHeader>
         Bingo
+        <FluentSpacer/>
+        Bingo
     </FluentHeader>
-    
+
     <FluentStack Orientation="Orientation.Horizontal" Width="100%">
         <FluentNavMenu Width="250">
-            <FluentNavLink Icon="@(new Size24.Home())"></FluentNavLink>
+            <FluentNavLink Icon="@(new Size24.Home())" Href="/">Home</FluentNavLink>
+            <FluentNavLink Icon="@(new Size24.Code())" Href="/Templates">Templates</FluentNavLink>
+            <FluentNavLink Icon="@(new Size24.Settings())" Href="/Settings">Settings</FluentNavLink>
         </FluentNavMenu>
-        
+
         <FluentBodyContent>
             @Body
         </FluentBodyContent>
@@ -25,5 +29,7 @@
 </FluentLayout>
 
 @code {
-    
+    protected DesignThemeModes Mode { get; set; } = DesignThemeModes.System;
+
+    protected string Color { get; set; } = "#012E5F";
 }
