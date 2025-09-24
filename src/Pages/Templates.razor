@@ -1,9 +1,20 @@
 ﻿@page "/Templates"
 @using Bingo.Layouts
+@using Bingo.Models
 @layout MainLayout
 
 <h3>Templates</h3>
 
+<FluentDataGrid
+    Items="@Items">
+
+</FluentDataGrid>
+
 @code {
+
+    private IQueryable<Template> Items { get; set; } = new List<Template>
+    {
+        new("id1", "PotA v1", "PotA", [])
+    }.AsQueryable();
 
 }
