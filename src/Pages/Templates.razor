@@ -1,20 +1,45 @@
 ﻿@page "/Templates"
+@using Bingo.Components
 @using Bingo.Layouts
 @using Bingo.Models
+@using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
 @layout MainLayout
 
-<h3>Templates</h3>
+<PageFrame Title="Templates">
+    <div>
+        <FluentButton Appearance="Appearance.Accent" IconStart="@(new Size16.ArrowUpload())" @OnClick="@(() => HandleUpload())">Import</FluentButton>
+        <FluentButton Appearance="Appearance.Accent" IconStart="@(new Size16.Add())">Create</FluentButton>
+    </div>
 
-<FluentDataGrid
-    Items="@Items">
+    <FluentDataGrid
+        Items="@Items" Pagination="@_pagination" RowSize="@DataGridRowSize.Medium">
 
-</FluentDataGrid>
+        <PropertyColumn Property="@(p => p.Name)" Sortable="@true"/>
+        <PropertyColumn Property="@(p => p.Group)" Sortable="@true"/>
+        <TemplateColumn Title="Actions">
+            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.ArrowDownload())"/>
+            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.Edit())"/>
+            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.Delete())"/>
+        </TemplateColumn>
+    </FluentDataGrid>
+
+    <FluentPaginator State="@_pagination" SummaryTemplate="@_template"></FluentPaginator>
+</PageFrame>
 
 @code {
 
+    private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
+
     private IQueryable<Template> Items { get; set; } = new List<Template>
     {
-        new("id1", "PotA v1", "PotA", [])
+        new("id1", "PotA v1", "PotA", []),
+        new("id2", "PotA v2", "PotA", []),
     }.AsQueryable();
+
+    private readonly RenderFragment _template = @<span></span>;
+
+    private void HandleUpload()
+    {
+    }
 
 }

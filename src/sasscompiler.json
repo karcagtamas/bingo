@@ -3,7 +3,7 @@
   "Target": "wwwroot/css",
   "Arguments": "--style=compressed",
   "GenerateScopedCss": true,
-  "ScopedCssFolders": ["Pages"],
+  "ScopedCssFolders": ["Pages", "Components", "Layouts"],
   "IncludePaths": [],
 
   "Compilations": [
