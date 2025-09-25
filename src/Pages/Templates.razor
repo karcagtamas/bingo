@@ -7,8 +7,11 @@
 
 <PageFrame Title="Templates">
     <div>
-        <FluentButton Appearance="Appearance.Accent" IconStart="@(new Size16.ArrowUpload())" @OnClick="@(() => HandleUpload())">Import</FluentButton>
-        <FluentButton Appearance="Appearance.Accent" IconStart="@(new Size16.Add())">Create</FluentButton>
+        <FluentButton Appearance="Appearance.Accent" IconStart="@(new Size16.ArrowUpload())" OnClick="@HandleUpload">
+            Import
+        </FluentButton>
+        <FluentButton Appearance="Appearance.Accent" IconStart="@(new Size16.Add())" OnClick="@HandleCreate">Create
+        </FluentButton>
     </div>
 
     <FluentDataGrid
@@ -17,9 +20,12 @@
         <PropertyColumn Property="@(p => p.Name)" Sortable="@true"/>
         <PropertyColumn Property="@(p => p.Group)" Sortable="@true"/>
         <TemplateColumn Title="Actions">
-            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.ArrowDownload())"/>
-            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.Edit())"/>
-            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.Delete())"/>
+            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.ArrowDownload())"
+                          OnClick="@(() => HandleExport(context))"/>
+            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.Edit())"
+                          OnClick="@(() => HandleEdit(context))"/>
+            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.Delete())"
+                          OnClick="@(() => HandleRemove(context))"/>
         </TemplateColumn>
     </FluentDataGrid>
 
@@ -38,7 +44,23 @@
 
     private readonly RenderFragment _template = @<span></span>;
 
-    private void HandleUpload()
+    protected void HandleUpload()
+    {
+    }
+
+    protected void HandleCreate()
+    {
+    }
+
+    protected void HandleExport(Template item)
+    {
+    }
+
+    protected void HandleEdit(Template item)
+    {
+    }
+
+    protected void HandleRemove(Template item)
     {
     }
 
