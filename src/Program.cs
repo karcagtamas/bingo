@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Bingo;
 using Bingo.Tauri.Interface;
-using Bingo.Tauri.Interface.Impl;
+using Bingo.Tauri.Interface.Dialog;
 using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);

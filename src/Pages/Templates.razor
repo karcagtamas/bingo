@@ -3,11 +3,11 @@
 @using Bingo.Layouts
 @using Bingo.Models
 @using Bingo.Tauri.Interface
-@using Bingo.Tauri.Interface.Models
+@using Bingo.Tauri.Interface.Dialog
+@using Bingo.Tauri.Interface.Dialog.Models
 @using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
 @layout MainLayout
 @inject ITauriDialogInterop TauriDialogInterop
-@inject IJSRuntime JSRuntime
 
 <PageFrame Title="Templates">
     <div>
@@ -58,7 +58,7 @@
 
     protected async Task HandleExport(Template item)
     {
-        var result = await TauriDialogInterop.SaveFileAsync(new SaveFileOptions("test.txt"));
+        var result = await TauriDialogInterop.SaveFileAsync(new SaveDialogOptions("export.json", []));
         Console.WriteLine(result);
     }
 
