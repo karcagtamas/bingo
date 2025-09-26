@@ -2,8 +2,11 @@
 @using Bingo.Components
 @using Bingo.Layouts
 @using Bingo.Models
+@using Bingo.Tauri.Interface
+@using Bingo.Tauri.Interface.Models
 @using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
 @layout MainLayout
+@inject ITauriDialogInterop TauriDialogInterop
 @inject IJSRuntime JSRuntime
 
 <PageFrame Title="Templates">
@@ -55,9 +58,8 @@
 
     protected async Task HandleExport(Template item)
     {
-        var json = System.Text.Json.JsonSerializer.Serialize(item);
-        var file = System.Text.Encoding.UTF8.GetBytes(json);
-        await JSRuntime.InvokeVoidAsync("BlazorDownload", "file.json", "application/json", file);
+        var result = await TauriDialogInterop.SaveFileAsync(new SaveFileOptions("test.txt"));
+        Console.WriteLine(result);
     }
 
     protected void HandleEdit(Template item)
