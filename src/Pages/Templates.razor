@@ -47,11 +47,7 @@
 
     private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
 
-    private readonly List<Template> _items =
-    [
-        new("id1", "PotA v1", "PotA", new DateTime(), false),
-        new("id2", "PotA v2", "PotA", new DateTime(), false)
-    ];
+    private List<Template> _items = [];
 
     private IQueryable<Template> Items => _items.AsQueryable();
 
@@ -59,7 +55,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var templates = await TauriDBInterop.GetTemplatesAsync();
+        _items = await TauriDBInterop.GetTemplatesAsync();
     }
 
     protected async Task HandleUpload()
@@ -77,6 +73,7 @@
                 if (item is not null)
                 {
                     _items.Add(item);
+                    await TauriDBInterop.AddTemplateAsync(item);
                 }
             }
         }
@@ -97,9 +94,10 @@
 
     protected async Task HandleEdit(Template item) => await OpenTemplateEditor(item);
 
-    protected void HandleRemove(Template item)
+    protected async Task HandleRemove(Template item)
     {
         _items.RemoveAll(i => i.Id == item.Id);
+        await TauriDBInterop.DeleteTemplateAsync(item.Id);
     }
 
     private async Task OpenTemplateEditor(Template? data)
@@ -127,12 +125,16 @@
 
             if (data == null)
             {
-                _items.Add(new Template(resultData.Id, resultData.Name!, resultData.Group!, new DateTime(), false));
+                var item = new Template(resultData.Id, resultData.Name!, resultData.Group!, new DateTime(), false);
+                _items.Add(item);
+                await TauriDBInterop.AddTemplateAsync(item);
             }
             else
             {
-                _items.Insert(_items.IndexOf(data), data with { Name = resultData.Name!, Group = resultData.Group! });
+                var item = data with { Name = resultData.Name!, Group = resultData.Group! };
+                _items.Insert(_items.IndexOf(data), item);
                 _items.Remove(data);
+                await TauriDBInterop.UpdateTemplateAsync(item);
             }
         }
     }

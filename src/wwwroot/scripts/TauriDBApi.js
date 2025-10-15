@@ -17,11 +17,11 @@ async function getTemplate(id) {
 }
 
 async function addTemplate(data) {
-    await (await db()).execute('INSERT INTO templates (id, name, group, creation, imported) VALUES ($1, $2, $3, $4)', [data.id, data.name, data.group, data.creation, data.imported]);
+    await (await db()).execute('INSERT INTO templates (id, name, grp, creation, imported) VALUES ($1, $2, $3, $4, $5)', [data.id, data.name, data.grp, data.creation, data.imported]);
 }
 
 async function updateTemplate(data) {
-    await (await db()).execute('UPDATE templates set name = $1, group = $2 WHERE id = $3', [data.name, data.group, data.id]);
+    await (await db()).execute('UPDATE templates set name = $1, grp = $2 WHERE id = $3', [data.name, data.grp, data.id]);
 }
 
 async function deleteTemplate(id) {
