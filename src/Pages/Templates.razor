@@ -3,6 +3,7 @@
 @using Bingo.Components.Dialogs
 @using Bingo.Layouts
 @using Bingo.Models
+@using Bingo.Tauri.Interface.DB
 @using Bingo.Tauri.Interface.Dialog
 @using Bingo.Tauri.Interface.Dialog.Models
 @using Bingo.Tauri.Interface.FS
@@ -11,6 +12,7 @@
 @layout MainLayout
 @inject ITauriDialogInterop TauriDialogInterop
 @inject ITauriFSInterop TauriFSInterop
+@inject ITauriDBInterop TauriDBInterop
 @inject IDialogService DialogService
 
 <PageFrame Title="Templates">
@@ -54,6 +56,11 @@
     private IQueryable<Template> Items => _items.AsQueryable();
 
     private readonly RenderFragment _template = @<span></span>;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var templates = await TauriDBInterop.GetTemplatesAsync();
+    }
 
     protected async Task HandleUpload()
     {

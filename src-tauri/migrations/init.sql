@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS templates (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    group TEXT NOT NULL,
+    grp TEXT NOT NULL,
     creation TEXT NOT NULL DEFAULT current_timestamp,
     imported INTEGER NOT NULL DEFAULT 0
 );
@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS template_items (
 
 CREATE TABLE IF NOT EXISTS games (
     id TEXT PRIMARY KEY,
+    caption TEXT NOT NULL,
     template_id TEXT NULL,
     custom INTEGER NOT NULL DEFAULT 0,
     rows INTEGER NOT NULL DEFAULT 5,
