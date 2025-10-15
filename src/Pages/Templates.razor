@@ -46,8 +46,8 @@
 
     private readonly List<Template> _items =
     [
-        new("id1", "PotA v1", "PotA", []),
-        new("id2", "PotA v2", "PotA", [])
+        new("id1", "PotA v1", "PotA", new DateTime(), false),
+        new("id2", "PotA v2", "PotA", new DateTime(), false)
     ];
 
     private IQueryable<Template> Items => _items.AsQueryable();
@@ -65,7 +65,7 @@
             if (data != null)
             {
                 var item = System.Text.Json.JsonSerializer.Deserialize<Template>(data);
-                
+
                 if (item is not null)
                 {
                     _items.Add(item);
@@ -76,7 +76,7 @@
 
     protected void HandleCreate()
     {
-        NavigationManager.NavigateTo("/templates/new");
+        NavigationManager.NavigateTo("/Templates/new");
     }
 
     protected async Task HandleExport(Template item)
@@ -92,7 +92,7 @@
 
     protected void HandleEdit(Template item)
     {
-        NavigationManager.NavigateTo($"/templates/{item.Id}");
+        NavigationManager.NavigateTo($"/Templates/{item.Id}");
     }
 
     protected void HandleRemove(Template item)

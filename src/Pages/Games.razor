@@ -1,0 +1,60 @@
+@page "/Games"
+@using Bingo.Components
+@using Bingo.Layouts
+@using Bingo.Models
+@using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
+@layout MainLayout
+@inject NavigationManager NavigationManager
+
+<PageFrame Title="Games">
+    <div>
+        <FluentButton Appearance="Appearance.Accent" IconStart="@(new Size16.Add())" OnClick="@HandleCreate">
+            Create
+        </FluentButton>
+    </div>
+
+    <FluentDataGrid
+        TGridItem="Game"
+        Items="@Items" Pagination="@_pagination" RowSize="@DataGridRowSize.Medium" OnRowClick="@HandleRowClick">
+
+        <PropertyColumn Property="@(p => p.Caption)" Sortable="@true"/>
+        <PropertyColumn Property="@(p => p.Creation)"></PropertyColumn>
+        <PropertyColumn Property="@(p => p.Rows)"></PropertyColumn>
+        <PropertyColumn Property="@(p => p.Cols)"></PropertyColumn>
+        <TemplateColumn Title="Actions">
+            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.Delete())"
+                          OnClick="@(() => HandleRemove(context))"/>
+        </TemplateColumn>
+    </FluentDataGrid>
+
+    <FluentPaginator State="@_pagination" SummaryTemplate="@_template"></FluentPaginator>
+</PageFrame>
+
+@code {
+
+    private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
+
+    private readonly List<Game> _items =
+    [
+        new("id1", "Game 1", null, false, 5, 5, new DateTime()),
+    ];
+
+    private IQueryable<Game> Items => _items.AsQueryable();
+
+    private readonly RenderFragment _template = @<span></span>;
+
+    protected void HandleCreate()
+    {
+    }
+
+    protected void HandleRowClick(FluentDataGridRow<Game> row)
+    {
+        NavigationManager.NavigateTo($"/GameTable/{row.Item?.Id}");
+    }
+
+    protected void HandleRemove(Game item)
+    {
+        _items.RemoveAll(i => i.Id == item.Id);
+    }
+
+}
