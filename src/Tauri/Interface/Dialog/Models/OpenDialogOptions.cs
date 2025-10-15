@@ -4,8 +4,8 @@ public record OpenDialogOptions(
     string DefaultPath,
     List<DialogFilter> Filters,
     string? Title = null,
-    bool? CanCreateDirectories = null,
-    string? Directory = null,
-    bool? Multiple = null,
-    bool? Recursive = null
+    bool CanCreateDirectories = false,
+    bool Directory = false,
+    bool Multiple = false,
+    bool Recursive = false
 );

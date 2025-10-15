@@ -4,16 +4,21 @@
 @using Bingo.Models
 @using Bingo.Tauri.Interface.Dialog
 @using Bingo.Tauri.Interface.Dialog.Models
+@using Bingo.Tauri.Interface.FS
+@using Bingo.Tauri.Interface.FS.Models
 @using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
 @layout MainLayout
 @inject ITauriDialogInterop TauriDialogInterop
+@inject ITauriFSInterop TauriFSInterop
+@inject NavigationManager NavigationManager
 
 <PageFrame Title="Templates">
     <div>
         <FluentButton Appearance="Appearance.Accent" IconStart="@(new Size16.ArrowUpload())" OnClick="@HandleUpload">
             Import
         </FluentButton>
-        <FluentButton Appearance="Appearance.Accent" IconStart="@(new Size16.Add())" OnClick="@HandleCreate">Create
+        <FluentButton Appearance="Appearance.Accent" IconStart="@(new Size16.Add())" OnClick="@HandleCreate">
+            Create
         </FluentButton>
     </div>
 
@@ -39,34 +44,60 @@
 
     private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
 
-    private IQueryable<Template> Items { get; set; } = new List<Template>
-    {
+    private readonly List<Template> _items =
+    [
         new("id1", "PotA v1", "PotA", []),
-        new("id2", "PotA v2", "PotA", []),
-    }.AsQueryable();
+        new("id2", "PotA v2", "PotA", [])
+    ];
+
+    private IQueryable<Template> Items => _items.AsQueryable();
 
     private readonly RenderFragment _template = @<span></span>;
 
-    protected void HandleUpload()
+    protected async Task HandleUpload()
     {
+        var path = await TauriDialogInterop.OpenFileAsync(new OpenDialogOptions("", [new DialogFilter(["json"], "export.json")]));
+
+        if (path != null)
+        {
+            var data = await TauriFSInterop.ReadTextFileAsync(path, new ReadFileOptions(null));
+
+            if (data != null)
+            {
+                var item = System.Text.Json.JsonSerializer.Deserialize<Template>(data);
+                
+                if (item is not null)
+                {
+                    _items.Add(item);
+                }
+            }
+        }
     }
 
     protected void HandleCreate()
     {
+        NavigationManager.NavigateTo("/templates/new");
     }
 
     protected async Task HandleExport(Template item)
     {
-        var result = await TauriDialogInterop.SaveFileAsync(new SaveDialogOptions("export.json", []));
-        Console.WriteLine(result);
+        var path = await TauriDialogInterop.SaveFileAsync(new SaveDialogOptions("export.json", []));
+
+        if (path != null)
+        {
+            var data = System.Text.Json.JsonSerializer.Serialize(item);
+            await TauriFSInterop.WriteTextFileAsync(path, data, new WriteFileOptions());
+        }
     }
 
     protected void HandleEdit(Template item)
     {
+        NavigationManager.NavigateTo($"/templates/{item.Id}");
     }
 
     protected void HandleRemove(Template item)
     {
+        _items.RemoveAll(i => i.Id == item.Id);
     }
 
 }

@@ -30,11 +30,11 @@ public class TauriFSInterop(IJSRuntime jsRuntime) : AbstractInterop(jsRuntime), 
     public async Task<byte[]> ReadFileAsync(string path, ReadFileOptions options) =>
         await JSRuntime.InvokeAsync<byte[]>($"{ScriptPrefix}readFile", path, options);
 
-    public async Task<string> ReadTextFileAsync(string path, ReadFileOptions options) =>
-        await JSRuntime.InvokeAsync<string>($"{ScriptPrefix}readFile", path, options);
+    public async Task<string?> ReadTextFileAsync(string path, ReadFileOptions options) =>
+        await JSRuntime.InvokeAsync<string?>($"{ScriptPrefix}readTextFile", path, options);
 
     public async Task<string[]> ReadTextFileLinesAsync(string path, ReadFileOptions options) =>
-        await JSRuntime.InvokeAsync<string[]>($"{ScriptPrefix}readFile", path, options);
+        await JSRuntime.InvokeAsync<string[]>($"{ScriptPrefix}readTextFileLines", path, options);
 
     public async Task RemoveAsync(string path, RemoveOptions options) =>
         await JSRuntime.InvokeVoidAsync($"{ScriptPrefix}remove", path, options);

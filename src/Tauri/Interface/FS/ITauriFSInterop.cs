@@ -21,7 +21,7 @@ public interface ITauriFSInterop
 
     public Task<byte[]> ReadFileAsync(string path, ReadFileOptions options);
 
-    public Task<string> ReadTextFileAsync(string path, ReadFileOptions options);
+    public Task<string?> ReadTextFileAsync(string path, ReadFileOptions options);
 
     public Task<string[]> ReadTextFileLinesAsync(string path, ReadFileOptions options);
 
