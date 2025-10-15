@@ -1,5 +1,6 @@
 ﻿@page "/Templates"
 @using Bingo.Components
+@using Bingo.Components.Dialogs
 @using Bingo.Layouts
 @using Bingo.Models
 @using Bingo.Tauri.Interface.Dialog
@@ -10,7 +11,7 @@
 @layout MainLayout
 @inject ITauriDialogInterop TauriDialogInterop
 @inject ITauriFSInterop TauriFSInterop
-@inject NavigationManager NavigationManager
+@inject IDialogService DialogService
 
 <PageFrame Title="Templates">
     <div>
@@ -74,10 +75,7 @@
         }
     }
 
-    protected void HandleCreate()
-    {
-        NavigationManager.NavigateTo("/Templates/new");
-    }
+    protected async Task HandleCreate() => await OpenTemplateEditor(null);
 
     protected async Task HandleExport(Template item)
     {
@@ -90,14 +88,46 @@
         }
     }
 
-    protected void HandleEdit(Template item)
-    {
-        NavigationManager.NavigateTo($"/Templates/{item.Id}");
-    }
+    protected async Task HandleEdit(Template item) => await OpenTemplateEditor(item);
 
     protected void HandleRemove(Template item)
     {
         _items.RemoveAll(i => i.Id == item.Id);
+    }
+
+    private async Task OpenTemplateEditor(Template? data)
+    {
+        var dialogData = data == null
+            ? new TemplateModel()
+            : new TemplateModel
+            {
+                Id = data.Id,
+                Name = data.Name,
+                Group = data.Group,
+            };
+        var dialog = await DialogService.ShowDialogAsync<TemplateEditorDialog>(dialogData, new DialogParameters
+        {
+            Height = "400px",
+            Title = data == null ? "Creating Template" : "Updating Template",
+            PreventDismissOnOverlayClick = true,
+            PreventScroll = true,
+        });
+
+        var result = await dialog.Result;
+        if (result is { Cancelled: false, Data: not null })
+        {
+            var resultData = (TemplateModel)result.Data;
+
+            if (data == null)
+            {
+                _items.Add(new Template(resultData.Id, resultData.Name!, resultData.Group!, new DateTime(), false));
+            }
+            else
+            {
+                _items.Insert(_items.IndexOf(data), data with { Name = resultData.Name!, Group = resultData.Group! });
+                _items.Remove(data);
+            }
+        }
     }
 
 }
