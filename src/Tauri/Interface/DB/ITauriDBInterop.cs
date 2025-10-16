@@ -13,4 +13,14 @@ public interface ITauriDBInterop
     public Task UpdateTemplateAsync(Template data);
 
     public Task DeleteTemplateAsync(string id);
+    
+    public Task<List<Game>> GetGamesAsync();
+
+    public Task<Game?> GetGameAsync(string id);
+
+    public Task AddGameAsync(Game data);
+
+    public Task UpdateGameAsync(Game data);
+
+    public Task DeleteGameAsync(string id);
 }
