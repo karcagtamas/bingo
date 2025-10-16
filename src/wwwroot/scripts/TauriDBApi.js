@@ -4,16 +4,23 @@ async function db() {
     return await TAURI_DATABASE.load("sqlite:app.bingo.db");
 }
 
+function mapTemplate(obj) {
+    return {
+        ...obj,
+        imported: obj.imported === "true",
+    }
+}
+
 async function getTemplates() {
     const res = await (await db()).select('SELECT * FROM templates');
 
-    console.log(res);
-
-    return res;
+    return res.map(mapTemplate);
 }
 
 async function getTemplate(id) {
-    return await (await db()).select('SELECT * FROM templates WHERE id = $1', [id]);
+    const res = await (await db()).select('SELECT * FROM templates WHERE id = $1', [id]);
+    
+    return mapTemplate(res);
 }
 
 async function addTemplate(data) {
