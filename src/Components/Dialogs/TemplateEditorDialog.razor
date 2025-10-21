@@ -1,5 +1,5 @@
 @using Bingo.Models
-@implements IDialogContentComponent<TemplateModel>
+@implements IDialogContentComponent<TemplateEditModel>
 
 <FluentDialogBody>
     <EditForm EditContext="@_editContext" FormName="template_editor">
@@ -26,7 +26,7 @@
 </FluentDialogFooter>
 
 @code {
-    [Parameter] public TemplateModel Content { get; set; } = new();
+    [Parameter] public TemplateEditModel Content { get; set; } = new();
 
     [CascadingParameter] public FluentDialog? Dialog { get; set; }
 

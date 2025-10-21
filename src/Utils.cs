@@ -18,6 +18,11 @@ public static class Utils
         }
     }
 
+    public static async Task WithNonNullAsync<T>(Task<T?> task, Func<T, Task> action)
+    {
+        await WithNonNull(await task, action);
+    }
+
     public static TResult MapOrElse<T, TResult>(T? obj, Func<T, TResult> mapper, TResult o)
     {
         return obj != null ? mapper(obj) : o;

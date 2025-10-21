@@ -4,11 +4,18 @@ async function db() {
     return await TAURI_DATABASE.load("sqlite:app.bingo.db");
 }
 
-function mapTemplate(obj) {
+function mapTemplate(obj, templateItems) {
     return {
         ...obj,
         imported: obj.imported === "true",
+        items: templateItems,
     };
+}
+
+function mapTemplateItem(obj) {
+    return {
+        ...obj,
+    }
 }
 
 function mapGame(obj) {
@@ -24,29 +31,46 @@ function mapGame(obj) {
 async function getTemplates() {
     const res = await (await db()).select('SELECT * FROM templates');
 
-    return res.map(mapTemplate);
+    return Promise.all(res.map(async x => mapTemplate(x, await getTemplateItems(x['id']))));
 }
 
 async function getTemplate(id) {
     const res = await (await db()).select('SELECT * FROM templates WHERE id = $1', [id]);
-    
-    return mapTemplate(res);
+
+    return mapTemplate(res, await getTemplateItems(id));
+}
+
+async function getTemplateItems(templateId) {
+    const res = await (await db()).select('SELECT * FROM template_items WHERE template_id = $1', [templateId]);
+
+    return res.map(mapTemplateItem);
 }
 
 async function addTemplate(data) {
     await (await db()).execute('INSERT INTO templates (id, name, grp, creation, imported) VALUES ($1, $2, $3, $4, $5)', [data.id, data.name, data.grp, data.creation, data.imported]);
+    await updateTemplateItems(data['items'], data['id']);
 }
 
 async function updateTemplate(data) {
     await (await db()).execute('UPDATE templates set name = $1, grp = $2 WHERE id = $3', [data.name, data.grp, data.id]);
+    await updateTemplateItems(data['items'], data['id']);
+}
+
+async function updateTemplateItems(templateItems, templateId) {
+    const db = await db();
+    await db.execute('DELETE FROM template_items WHERE id = $1', [templateId]);
+    for (const item in templateItems) {
+        await db.execute('INSERT INTO template_items (id, caption, template_id) VALUES ($1, $2, $3)', [item.id, item.caption, item.templateId]);
+    }
 }
 
 async function deleteTemplate(id) {
-    await (await db()).execute('DELETE FROM templates WHERE id = $1', [id]);
+    const db = await db();
+    await db.execute('DELETE FROM templates WHERE id = $1', [id]);
+    await db.execute('DELETE FROM template_items WHERE id = $1', [data.id]);
 }
 
-
-async function getGame() {
+async function getGames() {
     const res = await (await db()).select('SELECT * FROM games');
 
     return res.map(mapGame);

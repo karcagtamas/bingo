@@ -1,16 +1,17 @@
+using Bingo.Domain;
 using Bingo.Models;
 
 namespace Bingo.Tauri.Interface.DB;
 
 public interface ITauriDBInterop
 {
-    public Task<List<Template>> GetTemplatesAsync();
+    public Task<List<TemplateDataModel>> GetTemplatesAsync();
 
-    public Task<Template?> GetTemplateAsync(string id);
+    public Task<TemplateDataModel?> GetTemplateAsync(string id);
 
-    public Task AddTemplateAsync(Template data);
+    public Task AddTemplateAsync(TemplateDataModel data);
 
-    public Task UpdateTemplateAsync(Template data);
+    public Task UpdateTemplateAsync(TemplateDataModel data);
 
     public Task DeleteTemplateAsync(string id);
     

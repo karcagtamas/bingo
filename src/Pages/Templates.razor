@@ -2,6 +2,7 @@
 @using Bingo.Components
 @using Bingo.Components.Dialogs
 @using Bingo.Layouts
+@using Bingo.Mappers
 @using Bingo.Models
 @using Bingo.Tauri.Interface.DB
 @using Bingo.Tauri.Interface.Dialog
@@ -26,85 +27,111 @@
     </div>
 
     <FluentDataGrid
-        Items="@Items" Pagination="@_pagination" RowSize="@DataGridRowSize.Medium">
+        Items="@TreeData" RowSize="@DataGridRowSize.Medium">
+        <TemplateColumn Title="Name">
+            <div style="padding-left: @(context.Level * 20)px; display: flex; align-items: center;">
+                <FluentButton Appearance="Appearance.Stealth"
+                              IconStart="@(context.IsExpanded ? new Size16.CaretDown() : new Size16.CaretRight())"
+                              OnClick="@(() => ToggleExpand(context))"
+                              Disabled="@(context.Children.Count == 0)"/>
+                @context.Name
+            </div>
+        </TemplateColumn>
 
-        <PropertyColumn Property="@(p => p.Name)" Sortable="@true"/>
-        <PropertyColumn Property="@(p => p.Group)" Sortable="@true"/>
-        <TemplateColumn Title="Actions">
-            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.ArrowDownload())"
-                          OnClick="@(() => HandleExport(context))"/>
-            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.Edit())"
-                          OnClick="@(() => HandleEdit(context))"/>
-            <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.Delete())"
-                          OnClick="@(() => HandleRemove(context))"/>
+        <TemplateColumn Title="Actions" Width="140px">
+            @if (context.Level == 1)
+            {
+                <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.ArrowDownload())"
+                              OnClick="@(() => HandleExport(context))"/>
+                <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.Edit())"
+                              OnClick="@(() => HandleEdit(context))"/>
+                <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.Delete())"
+                              OnClick="@(() => HandleRemove(context))"/>
+            }
         </TemplateColumn>
     </FluentDataGrid>
-
-    <FluentPaginator State="@_pagination" SummaryTemplate="@_template"></FluentPaginator>
 </PageFrame>
 
 @code {
 
-    private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
+    private List<TemplateDataModel> _templates = [];
 
-    private List<Template> _items = [];
+    private List<TreeNode> _treeData = [];
 
-    private IQueryable<Template> Items => _items.AsQueryable();
+    private IQueryable<TreeNode> TreeData => _treeData.AsQueryable();
 
     private readonly RenderFragment _template = @<span></span>;
 
     protected override async Task OnInitializedAsync()
     {
-        _items = await TauriDBInterop.GetTemplatesAsync();
+        _templates = await TauriDBInterop.GetTemplatesAsync();
+        UpdateTreeData();
     }
 
     protected async Task HandleUpload()
     {
-        var path = await TauriDialogInterop.OpenFileAsync(new OpenDialogOptions("", [new DialogFilter(["json"], "export.json")]));
-
-        if (path != null)
-        {
-            var data = await TauriFSInterop.ReadTextFileAsync(path, new ReadFileOptions(null));
-
-            if (data != null)
-            {
-                var item = System.Text.Json.JsonSerializer.Deserialize<Template>(data);
-
-                if (item is not null)
+        await Utils.WithNonNullAsync(TauriDialogInterop.OpenFileAsync(new OpenDialogOptions("", [new DialogFilter(["json"], "export.json")])), path
+            => Utils.WithNonNullAsync(TauriFSInterop.ReadTextFileAsync(path, new ReadFileOptions(null)), data
+                => Utils.WithNonNull(System.Text.Json.JsonSerializer.Deserialize<TemplateExportDTO>(data), async dto =>
                 {
-                    _items.Add(item);
-                    await TauriDBInterop.AddTemplateAsync(item);
-                }
-            }
-        }
+                    var template = dto.ToDataModel(DateTime.Now);
+                    _templates.Add(template);
+                    await TauriDBInterop.AddTemplateAsync(template);
+                    UpdateTreeData();
+                })));
     }
 
     protected async Task HandleCreate() => await OpenTemplateEditor(null);
 
-    protected async Task HandleExport(Template item)
+    protected async Task HandleExport(TreeNode node)
     {
-        var path = await TauriDialogInterop.SaveFileAsync(new SaveDialogOptions("export.json", []));
-
-        if (path != null)
+        if (node.Data is TemplateDataModel template)
         {
-            var data = System.Text.Json.JsonSerializer.Serialize(item);
-            await TauriFSInterop.WriteTextFileAsync(path, data, new WriteFileOptions());
+            await Utils.WithNonNullAsync(TauriDialogInterop.SaveFileAsync(new SaveDialogOptions("export.json", [])), async path =>
+            {
+                var data = System.Text.Json.JsonSerializer.Serialize(template.ToExportDTO());
+                await TauriFSInterop.WriteTextFileAsync(path, data, new WriteFileOptions());
+            });
         }
     }
 
-    protected async Task HandleEdit(Template item) => await OpenTemplateEditor(item);
-
-    protected async Task HandleRemove(Template item)
+    protected async Task HandleEdit(TreeNode node)
     {
-        _items.RemoveAll(i => i.Id == item.Id);
-        await TauriDBInterop.DeleteTemplateAsync(item.Id);
+        if (node.Data is TemplateDataModel template)
+        {
+            await OpenTemplateEditor(template);
+        }
     }
 
-    private async Task OpenTemplateEditor(Template? data)
+    protected async Task HandleRemove(TreeNode node)
+    {
+        if (node.Data is TemplateDataModel template)
+        {
+            _templates.RemoveAll(i => i.Id == template.Id);
+            await TauriDBInterop.DeleteTemplateAsync(template.Id);
+            UpdateTreeData();
+        }
+    }
+
+    protected void ToggleExpand(TreeNode node)
+    {
+        node.IsExpanded = !node.IsExpanded;
+
+        if (node is { IsExpanded: true, Children.Count: > 0 })
+        {
+            _treeData.InsertRange(_treeData.IndexOf(node) + 1, node.Children);
+        }
+        else
+        {
+            _treeData.RemoveAll(child => node.Children.Contains(child));
+        }
+    }
+
+    private async Task OpenTemplateEditor(TemplateDataModel? data)
     {
         var dialogData = data == null
-            ? new TemplateModel()
-            : new TemplateModel
+            ? new TemplateEditModel()
+            : new TemplateEditModel
             {
                 Id = data.Id,
                 Name = data.Name,
@@ -121,22 +148,56 @@
         var result = await dialog.Result;
         if (result is { Cancelled: false, Data: not null })
         {
-            var resultData = (TemplateModel)result.Data;
+            var resultData = (TemplateEditModel)result.Data;
 
             if (data == null)
             {
-                var item = new Template(resultData.Id, resultData.Name!, resultData.Group!, new DateTime(), false);
-                _items.Add(item);
+                var item = new TemplateDataModel(resultData.Id, resultData.Name!, resultData.Group!, new DateTime(), false, []);
+                _templates.Add(item);
                 await TauriDBInterop.AddTemplateAsync(item);
             }
             else
             {
                 var item = data with { Name = resultData.Name!, Group = resultData.Group! };
-                _items.Insert(_items.IndexOf(data), item);
-                _items.Remove(data);
+                _templates.Insert(_templates.IndexOf(data), item);
+                _templates.Remove(data);
                 await TauriDBInterop.UpdateTemplateAsync(item);
             }
+
+            UpdateTreeData();
         }
+    }
+
+    private void UpdateTreeData()
+    {
+        _treeData = _templates
+            .GroupBy(template => template.Group)
+            .OrderBy(grouping => grouping.Key)
+            .Select(grouping =>
+            {
+                return new TreeNode(grouping.Key)
+                {
+                    Name = grouping.Key,
+                    Level = 0,
+                    Children = grouping
+                        .OrderBy(template => template.Name)
+                        .Select(template =>
+                        {
+                            return new TreeNode(template)
+                            {
+                                Name = template.Name,
+                                Level = 1,
+                                Children = template.Items
+                                    .OrderBy(item => item.Caption)
+                                    .Select(item => new TreeNode(item)
+                                    {
+                                        Name = item.Caption,
+                                        Level = 2,
+                                    }).ToList(),
+                            };
+                        }).ToList(),
+                };
+            }).ToList();
     }
 
 }

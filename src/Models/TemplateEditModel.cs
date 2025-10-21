@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Bingo.Models;
 
-public class TemplateModel
+public class TemplateEditModel
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
 
