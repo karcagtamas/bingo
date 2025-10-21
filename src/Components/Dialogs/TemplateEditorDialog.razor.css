@@ -1,0 +1,9 @@
+.items {
+  padding: 1rem;
+  gap: 1rem;
+}
+.items .item {
+  gap: 1rem;
+}
+
+/*# sourceMappingURL=TemplateEditorDialog.razor.css.map */

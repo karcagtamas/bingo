@@ -1,12 +1,32 @@
-<FluentCard>
-    <h3>@Title</h3>
+<div style="padding: 1rem 1rem 1rem 0">
+    <FluentCard>
+        @if (PageFrameTitle != null)
+        {
+            @PageFrameTitle(Title)
+        }
+        else
+        {
+            <h3>@Title</h3>
+        }
 
-    @ChildContent
-</FluentCard>
+        @if (PageFrameActionHeader != null)
+        {
+            <FluentCard Class="flex-row" Style="gap: 1rem;">
+                @PageFrameActionHeader
+            </FluentCard>
+        }
+
+        @ChildContent
+    </FluentCard>
+</div>
 
 @code {
 
     [Parameter] public required string Title { get; set; }
 
     [Parameter] public required RenderFragment ChildContent { get; set; }
+
+    [Parameter] public RenderFragment? PageFrameActionHeader { get; set; }
+
+    [Parameter] public RenderFragment<string>? PageFrameTitle { get; set; }
 }

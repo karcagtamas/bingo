@@ -1,11 +1,32 @@
 @using Bingo.Models
+@using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
 @implements IDialogContentComponent<TemplateEditModel>
 
 <FluentDialogBody>
     <EditForm EditContext="@_editContext" FormName="template_editor">
         <DataAnnotationsValidator/>
-        <FluentTextField Label="Name" @bind-Value="@Content.Name" Required></FluentTextField>
-        <FluentTextField Label="Group" @bind-Value="@Content.Group" Required></FluentTextField>
+        <FluentTextField Class="w-100" Label="Name" @bind-Value="@Content.Name" Required/>
+        <FluentTextField Class="w-100" Label="Group" @bind-Value="@Content.Group" Required/>
+
+        <FluentDivider Role="@DividerRole.Separator"/>
+        <div class="items flex-col">
+            <h5>Items [@Content.Items.Count]</h5>
+            <FluentButton Appearance="Appearance.Accent" IconStart="@(new Size16.Add())" OnClick="@HandleAdd">
+                Add
+            </FluentButton>
+            @foreach (var item in Content.Items)
+            {
+                <EditForm Model="@item">
+                    <ChildContent Context="alma">
+                        <div class="item flex-row-1 align-items-center">
+                            <FluentTextField Class="w-100" @bind-Value="@item.Caption" Required/>
+                            <FluentButton Appearance="Appearance.Accent" IconStart="@(new Size16.Delete())"
+                                          OnClick="@(() => HandleRemove(item))"/>
+                        </div>
+                    </ChildContent>
+                </EditForm>
+            }
+        </div>
 
         <div style="color: var(--error);">
             <FluentValidationSummary/>
@@ -36,6 +57,10 @@
     {
         _editContext = new EditContext(Content);
     }
+
+    protected void HandleAdd() => Content.Items.Add(new TemplateItemEditModel());
+
+    protected void HandleRemove(TemplateItemEditModel item) => Content.Items.Remove(item);
 
     private async Task SaveAsync()
     {

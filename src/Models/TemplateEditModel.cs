@@ -9,4 +9,6 @@ public class TemplateEditModel
     [Required] public string? Name { get; set; }
 
     [Required] public string? Group { get; set; }
+
+    public List<TemplateItemEditModel> Items { get; set; } = [];
 }

@@ -17,39 +17,41 @@
 @inject IDialogService DialogService
 
 <PageFrame Title="Templates">
-    <div>
+    <PageFrameActionHeader>
         <FluentButton Appearance="Appearance.Accent" IconStart="@(new Size16.ArrowUpload())" OnClick="@HandleUpload">
             Import
         </FluentButton>
         <FluentButton Appearance="Appearance.Accent" IconStart="@(new Size16.Add())" OnClick="@HandleCreate">
             Create
         </FluentButton>
-    </div>
+    </PageFrameActionHeader>
 
-    <FluentDataGrid
-        Items="@TreeData" RowSize="@DataGridRowSize.Medium">
-        <TemplateColumn Title="Name">
-            <div style="padding-left: @(context.Level * 20)px; display: flex; align-items: center;">
-                <FluentButton Appearance="Appearance.Stealth"
-                              IconStart="@(context.IsExpanded ? new Size16.CaretDown() : new Size16.CaretRight())"
-                              OnClick="@(() => ToggleExpand(context))"
-                              Disabled="@(context.Children.Count == 0)"/>
-                @context.Name
-            </div>
-        </TemplateColumn>
+    <ChildContent>
+        <FluentDataGrid
+            Items="@TreeData" RowSize="@DataGridRowSize.Medium">
+            <TemplateColumn Title="Name">
+                <div class="d-flex align-items-center" style="padding-left: @(context.Level * 20)px;">
+                    <FluentButton Appearance="Appearance.Stealth"
+                                  IconStart="@(context.IsExpanded ? new Size16.CaretDown() : new Size16.CaretRight())"
+                                  OnClick="@(() => ToggleExpand(context))"
+                                  Disabled="@(context.Children.Count == 0)"/>
+                    @context.Name
+                </div>
+            </TemplateColumn>
 
-        <TemplateColumn Title="Actions" Width="140px">
-            @if (context.Level == 1)
-            {
-                <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.ArrowDownload())"
-                              OnClick="@(() => HandleExport(context))"/>
-                <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.Edit())"
-                              OnClick="@(() => HandleEdit(context))"/>
-                <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.Delete())"
-                              OnClick="@(() => HandleRemove(context))"/>
-            }
-        </TemplateColumn>
-    </FluentDataGrid>
+            <TemplateColumn Title="Actions" Width="140px">
+                @if (context.Level == 1)
+                {
+                    <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.ArrowDownload())"
+                                  OnClick="@(() => HandleExport(context))"/>
+                    <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.Edit())"
+                                  OnClick="@(() => HandleEdit(context))"/>
+                    <FluentButton Appearance="Appearance.Outline" IconStart="@(new Size16.Delete())"
+                                  OnClick="@(() => HandleRemove(context))"/>
+                }
+            </TemplateColumn>
+        </FluentDataGrid>
+    </ChildContent>
 </PageFrame>
 
 @code {
@@ -59,8 +61,6 @@
     private List<TreeNode> _treeData = [];
 
     private IQueryable<TreeNode> TreeData => _treeData.AsQueryable();
-
-    private readonly RenderFragment _template = @<span></span>;
 
     protected override async Task OnInitializedAsync()
     {
@@ -87,7 +87,7 @@
     {
         if (node.Data is TemplateDataModel template)
         {
-            await Utils.WithNonNullAsync(TauriDialogInterop.SaveFileAsync(new SaveDialogOptions("export.json", [])), async path =>
+            await Utils.WithNonNullAsync(TauriDialogInterop.SaveFileAsync(new SaveDialogOptions($"export_{template.Id}.json", [])), async path =>
             {
                 var data = System.Text.Json.JsonSerializer.Serialize(template.ToExportDTO());
                 await TauriFSInterop.WriteTextFileAsync(path, data, new WriteFileOptions());
@@ -136,6 +136,13 @@
                 Id = data.Id,
                 Name = data.Name,
                 Group = data.Group,
+                Items = data.Items
+                    .Select(i => new TemplateItemEditModel
+                    {
+                        Id = i.Id,
+                        Caption = i.Caption,
+                    })
+                    .ToList(),
             };
         var dialog = await DialogService.ShowDialogAsync<TemplateEditorDialog>(dialogData, new DialogParameters
         {
@@ -152,13 +159,24 @@
 
             if (data == null)
             {
-                var item = new TemplateDataModel(resultData.Id, resultData.Name!, resultData.Group!, new DateTime(), false, []);
+                var item = new TemplateDataModel(
+                    resultData.Id,
+                    resultData.Name!,
+                    resultData.Group!,
+                    DateTime.Now,
+                    false,
+                    resultData.Items.Select(i => new TemplateItemDataModel(i.Id, i.Caption!, resultData.Id)).ToList());
                 _templates.Add(item);
                 await TauriDBInterop.AddTemplateAsync(item);
             }
             else
             {
-                var item = data with { Name = resultData.Name!, Group = resultData.Group! };
+                var item = data with
+                {
+                    Name = resultData.Name!,
+                    Group = resultData.Group!,
+                    Items = resultData.Items.Select(i => new TemplateItemDataModel(i.Id, i.Caption!, resultData.Id)).ToList()
+                };
                 _templates.Insert(_templates.IndexOf(data), item);
                 _templates.Remove(data);
                 await TauriDBInterop.UpdateTemplateAsync(item);
