@@ -30,7 +30,7 @@
         <FluentDataGrid
             Items="@TreeData" RowSize="@DataGridRowSize.Medium">
             <TemplateColumn Title="Name">
-                <div class="d-flex align-items-center" style="padding-left: @(context.Level * 20)px;">
+                <div class="d-flex align-items-center name-cell" style="padding-left: @(context.Level * 20)px;">
                     <FluentButton Appearance="Appearance.Stealth"
                                   IconStart="@(context.IsExpanded ? new Size16.CaretDown() : new Size16.CaretRight())"
                                   OnClick="@(() => ToggleExpand(context))"
