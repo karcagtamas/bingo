@@ -56,7 +56,7 @@
     private EditContext _editContext = null!;
     private List<TemplateDataModel> _templates = [];
 
-    private GameMatrixConfiguration? _matrixConfiguration = null;
+    private GameMatrixConfiguration? _matrixConfiguration;
     private List<GameMatrixCell> _matrixCells = [];
 
     protected override async Task OnInitializedAsync()
@@ -80,8 +80,44 @@
 
     private void GenerateCells()
     {
-        return;
+        if (Content.Rows == null || Content.Cols == null || Content.TemplateId == null)
+        {
+            ReloadMatrixSettings();
+            return;
+        }
 
+        var template = _templates
+            .First(t => t.Id == Content.TemplateId);
+
+        // TODO: Message if there is no enough game cell
+        // TODO: Support total re-generate and remove/append
+
+        var size = (int)(Content.Rows * Content.Cols);
+        var items = CollectTemplateItems(template, size - 1);
+        var cells = new List<GameCellEditModel>();
+
+        for (int i = 0; i < size; i++)
+        {
+            if (i == size / 2)
+            {
+                cells.Add(new GameCellEditModel
+                {
+                    Joker = true,
+                    OrderNo = i,
+                });
+            }
+            else
+            {
+                var idx = i < size / 2 ? i : i + 1;
+                cells.Add(new GameCellEditModel
+                {
+                    Caption = items[idx].Caption,
+                    OrderNo = idx,
+                });
+            }
+        }
+
+        Content.Cells = cells;
         ReloadMatrixSettings();
     }
 
@@ -96,6 +132,19 @@
 
         _matrixConfiguration = new GameMatrixConfiguration(Content.Rows ?? 0, Content.Cols ?? 0);
         _matrixCells = Content.Cells.Select(c => c.ToMatrixCell()).ToList();
+    }
+
+    private List<TemplateItemDataModel> CollectTemplateItems(TemplateDataModel template, int count)
+    {
+        var items = new HashSet<TemplateItemDataModel>();
+
+        var rnd = new Random();
+        while (items.Count < count)
+        {
+            items.Add(template.Items[rnd.Next(items.Count)]);
+        }
+
+        return items.ToList();
     }
 
 }
