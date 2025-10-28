@@ -1,0 +1,68 @@
+@using Bingo.Models
+@using Bingo.Tauri.Interface.DB
+@implements IDialogContentComponent<GameEditModel>
+@inject ITauriDBInterop TauriDBInterop
+
+<FluentDialogBody>
+    <EditForm EditContext="@_editContext" FormName="template_editor">
+        <DataAnnotationsValidator/>
+        <FluentTextField Class="w-100" Label="Caption" @bind-Value="@Content.Caption" Required/>
+        <FluentNumberField Class="w-100" Label="Rows" @bind-Value="@Content.Rows" Required/>
+        <FluentNumberField Class="w-100" Label="Columns" @bind-Value="@Content.Cols" Required/>
+
+        <FluentSelect TOption="TemplateDataModel"
+                      Class="w-100"
+                      Label="Template"
+                      Items="_templates"
+                      OptionValue="@(d => d.Id)"
+                      OptionText="@(d => d.Name)"
+                      @bind-Value="@Content.TemplateId"/>
+
+        <FluentDivider Role="@DividerRole.Separator"/>
+
+        <div style="color: var(--error);">
+            <FluentValidationSummary/>
+        </div>
+    </EditForm>
+</FluentDialogBody>
+
+<FluentDialogFooter>
+    <FluentButton Appearance="Appearance.Accent"
+                  Disabled="@(!_editContext.Validate())"
+                  OnClick="@SaveAsync">
+        Save
+    </FluentButton>
+    <FluentButton Appearance="Appearance.Neutral"
+                  OnClick="@CancelAsync">
+        Cancel
+    </FluentButton>
+</FluentDialogFooter>
+
+@code {
+    [Parameter] public GameEditModel Content { get; set; } = new();
+
+    [CascadingParameter] public FluentDialog? Dialog { get; set; }
+
+    private EditContext _editContext = null!;
+    private List<TemplateDataModel> _templates;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _editContext = new EditContext(Content);
+        _templates = await TauriDBInterop.GetTemplatesAsync();
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_editContext.Validate())
+        {
+            await Utils.WithNonNull(Dialog, dialog => dialog.CloseAsync(Content));
+        }
+    }
+
+    private async Task CancelAsync()
+    {
+        await Utils.WithNonNull(Dialog, dialog => dialog.CloseAsync());
+    }
+
+}

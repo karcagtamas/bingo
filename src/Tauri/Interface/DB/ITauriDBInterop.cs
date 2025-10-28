@@ -1,4 +1,3 @@
-using Bingo.Domain;
 using Bingo.Models;
 
 namespace Bingo.Tauri.Interface.DB;

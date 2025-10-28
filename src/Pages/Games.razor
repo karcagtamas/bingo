@@ -1,11 +1,13 @@
 @page "/Games"
 @using Bingo.Components
+@using Bingo.Components.Dialogs
 @using Bingo.Layouts
 @using Bingo.Models
 @using Bingo.Tauri.Interface.DB
 @using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
 @layout MainLayout
 @inject NavigationManager NavigationManager
+@inject IDialogService DialogService
 @inject ITauriDBInterop TauriDBInterop
 
 <PageFrame Title="Games">
@@ -51,6 +53,32 @@
 
     protected async Task HandleCreate()
     {
+        var dialog = await DialogService.ShowDialogAsync<GameEditorDialog>(new GameEditModel(), new DialogParameters
+        {
+            Height = "400px",
+            Title = "Creating Game",
+            PreventDismissOnOverlayClick = true,
+            PreventScroll = true,
+        });
+
+        var result = await dialog.Result;
+
+        if (result is { Cancelled: false, Data: not null })
+        {
+            var resultData = (GameEditModel)result.Data;
+
+            var item = new GameDataModel(
+                resultData.Id,
+                resultData.Caption!,
+                resultData.TemplateId!,
+                false,
+                resultData.Rows ?? 0,
+                resultData.Cols ?? 0,
+                DateTime.Now,
+                resultData.Cells.Select(i => new GameCellDataModel(i.Id, i.OrderNo, i.Checked, i.Joker, i.Caption, resultData.Id)).ToList());
+            _data.Add(item);
+            await TauriDBInterop.AddGameAsync(item);
+        }
     }
 
     protected void HandleRowClick(FluentDataGridRow<GameDataModel> row)
