@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Bingo.Models;
+namespace Bingo.Models.Templates;
 
 public record TemplateDataModel(
     string Id,

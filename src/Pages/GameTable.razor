@@ -6,6 +6,9 @@
 
 <PageFrame Title="@Game.Caption">
 
+    <ChildContent>
+
+    </ChildContent>
 </PageFrame>
 
 @code {
@@ -13,7 +16,4 @@
     [Parameter] public required string Id { get; set; }
 
     private Game Game { get; set; } = new("id1", "Game 1", null, false, 5, 5, new DateTime());
-
-    private List<GameCell> GameCells { get; set; } = [];
-
 }

@@ -1,4 +1,6 @@
 using Bingo.Models;
+using Bingo.Models.Games;
+using Bingo.Models.Templates;
 using Microsoft.JSInterop;
 
 namespace Bingo.Tauri.Interface.DB;

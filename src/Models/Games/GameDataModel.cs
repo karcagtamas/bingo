@@ -1,4 +1,4 @@
-namespace Bingo.Models;
+namespace Bingo.Models.Games;
 
 public record GameDataModel(
     string Id,

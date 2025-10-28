@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Bingo.Models;
+namespace Bingo.Models.Games;
 
 public class GameEditModel
 {

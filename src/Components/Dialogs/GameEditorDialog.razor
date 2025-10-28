@@ -1,14 +1,18 @@
-@using Bingo.Models
+@using Bingo.Mappers
+@using Bingo.Models.Games
+@using Bingo.Models.Templates
 @using Bingo.Tauri.Interface.DB
-@implements IDialogContentComponent<GameEditModel>
+@implements IDialogContentComponent<Bingo.Models.Games.GameEditModel>
 @inject ITauriDBInterop TauriDBInterop
 
 <FluentDialogBody>
     <EditForm EditContext="@_editContext" FormName="template_editor">
         <DataAnnotationsValidator/>
         <FluentTextField Class="w-100" Label="Caption" @bind-Value="@Content.Caption" Required/>
-        <FluentNumberField Class="w-100" Label="Rows" @bind-Value="@Content.Rows" Required/>
-        <FluentNumberField Class="w-100" Label="Columns" @bind-Value="@Content.Cols" Required/>
+        <FluentNumberField Class="w-100" Label="Rows" @bind-Value="@Content.Rows"
+                           ValueChanged="@(_ => GenerateCells())" Required/>
+        <FluentNumberField Class="w-100" Label="Columns" @bind-Value="@Content.Cols"
+                           ValueChanged="@(_ => GenerateCells())" Required/>
 
         <FluentSelect TOption="TemplateDataModel"
                       Class="w-100"
@@ -16,9 +20,15 @@
                       Items="_templates"
                       OptionValue="@(d => d.Id)"
                       OptionText="@(d => d.Name)"
-                      @bind-Value="@Content.TemplateId"/>
+                      @bind-Value="@Content.TemplateId"
+                      ValueChanged="@(_ => GenerateCells())"/>
 
         <FluentDivider Role="@DividerRole.Separator"/>
+
+        @if (_matrixConfiguration != null && _matrixCells.Count > 0)
+        {
+            <GameMatrix Configuration="@_matrixConfiguration" Cells="@_matrixCells"/>
+        }
 
         <div style="color: var(--error);">
             <FluentValidationSummary/>
@@ -44,7 +54,10 @@
     [CascadingParameter] public FluentDialog? Dialog { get; set; }
 
     private EditContext _editContext = null!;
-    private List<TemplateDataModel> _templates;
+    private List<TemplateDataModel> _templates = [];
+
+    private GameMatrixConfiguration? _matrixConfiguration = null;
+    private List<GameMatrixCell> _matrixCells = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -63,6 +76,26 @@
     private async Task CancelAsync()
     {
         await Utils.WithNonNull(Dialog, dialog => dialog.CloseAsync());
+    }
+
+    private void GenerateCells()
+    {
+        return;
+
+        ReloadMatrixSettings();
+    }
+
+    private void ReloadMatrixSettings()
+    {
+        if (Content.Rows == null || Content.Cols == null || Content.Cells.Count == 0)
+        {
+            _matrixConfiguration = null;
+            _matrixCells = [];
+            return;
+        }
+
+        _matrixConfiguration = new GameMatrixConfiguration(Content.Rows ?? 0, Content.Cols ?? 0);
+        _matrixCells = Content.Cells.Select(c => c.ToMatrixCell()).ToList();
     }
 
 }

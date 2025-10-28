@@ -1,4 +1,4 @@
-namespace Bingo.Models;
+namespace Bingo.Models.Templates;
 
 public class TemplateItemEditModel
 {

@@ -1,0 +1,11 @@
+@using Bingo.Models.Games
+
+<div>
+    @Data.Caption
+</div>
+
+
+@code {
+
+    [Parameter] public required GameMatrixCell Data { get; set; }
+}

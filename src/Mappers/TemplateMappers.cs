@@ -1,4 +1,5 @@
 using Bingo.Models;
+using Bingo.Models.Templates;
 
 namespace Bingo.Mappers;
 
