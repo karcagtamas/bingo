@@ -76,7 +76,7 @@ async function updateTemplateItems(templateItems, templateId) {
 
 async function deleteTemplate(id) {
     const db = await database();
-    await db.execute('UPDATE games WHERE template_id = $1 SET template_id = $2', [id, null])
+    await db.execute('UPDATE games SET template_id = $2 WHERE template_id = $1', [null, id])
     await db.execute('DELETE FROM template_items WHERE template_id = $1', [id]);
     await db.execute('DELETE FROM templates WHERE id = $1', [id]);
 }

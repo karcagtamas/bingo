@@ -8,20 +8,28 @@
 <FluentDialogBody>
     <EditForm EditContext="@_editContext" FormName="template_editor">
         <DataAnnotationsValidator/>
-        <FluentTextField Class="w-100" Label="Caption" @bind-Value="@Content.Caption" Required/>
-        <FluentNumberField Class="w-100" Label="Rows" @bind-Value="@Content.Rows"
-                           ValueChanged="@(_ => GenerateCells())" Required/>
-        <FluentNumberField Class="w-100" Label="Columns" @bind-Value="@Content.Cols"
-                           ValueChanged="@(_ => GenerateCells())" Required/>
+        <FluentTextField Class="w-100" Label="Caption" Value="@Content.Caption" Required/>
+        <FluentNumberField TValue="int?"
+                           Class="w-100"
+                           Label="Rows"
+                           Value="@Content.Rows"
+                           ValueChanged="@HandleRowsChange"
+                           Required/>
+        <FluentNumberField TValue="int?"
+                           Class="w-100"
+                           Label="Columns"
+                           ValueChanged="@HandleColsChange"
+                           Required/>
 
         <FluentSelect TOption="TemplateDataModel"
+                      TValue="string?"
                       Class="w-100"
                       Label="Template"
                       Items="_templates"
                       OptionValue="@(d => d.Id)"
                       OptionText="@(d => d.Name)"
-                      @bind-Value="@Content.TemplateId"
-                      ValueChanged="@(_ => GenerateCells())"/>
+                      Value="@Content.TemplateId"
+                      ValueChanged="@HandleTemplateChange"/>
 
         <FluentDivider Role="@DividerRole.Separator"/>
 
@@ -76,6 +84,24 @@
     private async Task CancelAsync()
     {
         await Utils.WithNonNull(Dialog, dialog => dialog.CloseAsync());
+    }
+
+    private void HandleRowsChange(int? value)
+    {
+        Content.Rows = value;
+        GenerateCells();
+    }
+
+    private void HandleColsChange(int? value)
+    {
+        Content.Cols = value;
+        GenerateCells();
+    }
+
+    private void HandleTemplateChange(string? value)
+    {
+        Content.TemplateId = value;
+        GenerateCells();
     }
 
     private void GenerateCells()
